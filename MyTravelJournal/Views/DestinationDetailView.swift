@@ -37,6 +37,7 @@ struct DestinationDetailView: View {
   @ObservedObject var destination: Destination
   @State private var share: CKShare?
   @State private var showEditSheet = false
+  @State private var showShareSheet = false
   private let stack = CoreDataStack.shared
 
   var body: some View {
@@ -80,8 +81,20 @@ struct DestinationDetailView: View {
         Text("Participants")
       }
     }
+    .onAppear(perform: {
+      self.share = stack.getShare(destination)
+    })
     .sheet(isPresented: $showEditSheet, content: {
       EditDestinationView(destination: destination)
+    })
+    .sheet(isPresented: $showShareSheet, content: {
+      if let share = share {
+        CloudSharingView(
+          share: share,
+          container: stack.ckContainer,
+          destination: destination
+        )
+      }
     })
     .toolbar {
       ToolbarItem(placement: .navigationBarTrailing) {
@@ -93,7 +106,12 @@ struct DestinationDetailView: View {
       }
       ToolbarItem(placement: .navigationBarTrailing) {
         Button {
-          print("Share button tapped")
+          if !stack.isShared(object: destination) {
+            Task {
+              await createShare(destination)
+            }
+          }
+          showShareSheet = true
         } label: {
           Image(systemName: "square.and.arrow.up")
         }

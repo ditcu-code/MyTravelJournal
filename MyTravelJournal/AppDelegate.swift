@@ -42,4 +42,19 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 }
 
 final class SceneDelegate: NSObject, UIWindowSceneDelegate {
+  func windowScene(
+    _ windowScene: UIWindowScene,
+    userDidAcceptCloudKitShareWith cloudKitShareMetadata: CKShare.Metadata
+  ) {
+    let shareStore = CoreDataStack.shared.sharedPersistentStore
+    let persistentContainer = CoreDataStack.shared.persistentContainer
+    persistentContainer.acceptShareInvitations(
+      from: [cloudKitShareMetadata], into: shareStore
+    ) { _, error in
+      if let error = error {
+        print("acceptShareInvitation error :\(error)")
+      }
+    }
+  }
+
 }
