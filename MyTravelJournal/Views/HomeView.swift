@@ -59,6 +59,13 @@ struct HomeView: View {
                   .font(.callout)
                   .foregroundColor(.secondary)
                   .multilineTextAlignment(.leading)
+
+                if stack.isShared(object: destination) {
+                  Image(systemName: "person.3.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30)
+                }
               }
             }
             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
@@ -67,6 +74,7 @@ struct HomeView: View {
               } label: {
                 Label("Delete", systemImage: "trash")
               }
+              .disabled(!stack.canDelete(object: destination))
             }
           }
         }

@@ -36,8 +36,8 @@ import SwiftUI
 struct DestinationDetailView: View {
   @ObservedObject var destination: Destination
   @State private var share: CKShare?
-  @State private var showEditSheet = false
   @State private var showShareSheet = false
+  @State private var showEditSheet = false
   private let stack = CoreDataStack.shared
 
   var body: some View {
@@ -81,20 +81,16 @@ struct DestinationDetailView: View {
         Text("Participants")
       }
     }
-    .onAppear(perform: {
-      self.share = stack.getShare(destination)
+    .sheet(isPresented: $showShareSheet, content: {
+      if let share = share {
+        CloudSharingView(share: share, container: stack.ckContainer, destination: destination)
+      }
     })
     .sheet(isPresented: $showEditSheet, content: {
       EditDestinationView(destination: destination)
     })
-    .sheet(isPresented: $showShareSheet, content: {
-      if let share = share {
-        CloudSharingView(
-          share: share,
-          container: stack.ckContainer,
-          destination: destination
-        )
-      }
+    .onAppear(perform: {
+      self.share = stack.getShare(destination)
     })
     .toolbar {
       ToolbarItem(placement: .navigationBarTrailing) {
@@ -103,6 +99,7 @@ struct DestinationDetailView: View {
         } label: {
           Text("Edit")
         }
+        .disabled(!stack.canEdit(object: destination))
       }
       ToolbarItem(placement: .navigationBarTrailing) {
         Button {
@@ -120,12 +117,11 @@ struct DestinationDetailView: View {
   }
 }
 
-// MARK: Returns CKShare participant permission
+// MARK: Returns CKShare participant permission, methods and properties to share
 extension DestinationDetailView {
   private func createShare(_ destination: Destination) async {
     do {
-      let (_, share, _) =
-      try await stack.persistentContainer.share([destination], to: nil)
+      let (_, share, _) = try await stack.persistentContainer.share([destination], to: nil)
       share[CKShare.SystemFieldKey.title] = destination.caption
       self.share = share
     } catch {
@@ -176,5 +172,9 @@ extension DestinationDetailView {
     @unknown default:
       fatalError("A new value added to CKShare.Participant.AcceptanceStatus")
     }
+  }
+
+  private var canEdit: Bool {
+    stack.canEdit(object: destination)
   }
 }

@@ -35,7 +35,6 @@ import SwiftUI
 struct AddDestinationView: View {
   @Environment(\.presentationMode) var presentationMode
   @Environment(\.managedObjectContext) var managedObjectContext
-
   @State private var caption: String = ""
   @State private var details: String = ""
   @State private var inputImage: UIImage?

@@ -43,9 +43,7 @@ struct CloudSharingView: UIViewControllerRepresentable {
   }
 
   func makeUIViewController(context: Context) -> UICloudSharingController {
-    // 1 Configures the title of the share. 
     share[CKShare.SystemFieldKey.title] = destination.caption
-    // 2
     let controller = UICloudSharingController(share: share, container: container)
     controller.modalPresentationStyle = .formSheet
     controller.delegate = context.coordinator
@@ -76,5 +74,8 @@ final class CloudSharingCoordinator: NSObject, UICloudSharingControllerDelegate 
   }
 
   func cloudSharingControllerDidStopSharing(_ csc: UICloudSharingController) {
+    if !stack.isOwner(object: destination) {
+      stack.delete(destination)
+    }
   }
 }
